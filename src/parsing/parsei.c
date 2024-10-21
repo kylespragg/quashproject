@@ -4,25 +4,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-char** parse_command(char* input) {
-    char** args = malloc(64 * sizeof(char*)); // Allocate memory for command arguments
+char** parse_command(char* command) {
+    int bufsize = 64, position = 0;
+    char** tokens = malloc(bufsize * sizeof(char*));
     char* token;
-    int position = 0;
 
-    if (!args) { // Check if memory allocation was successful
-        perror("malloc failed");
-        exit(EXIT_FAILURE);
-    }
-
-    token = strtok(input, " \t\r\n\a");
+    token = strtok(command, " \t\r\n");
     while (token != NULL) {
-        args[position] = token;
+        tokens[position] = token;
         position++;
-        token = strtok(NULL, " \t\r\n\a");
+
+        if (position >= bufsize) {
+            bufsize += 64;
+            tokens = realloc(tokens, bufsize * sizeof(char*));
+        }
+
+        token = strtok(NULL, " \t\r\n");
     }
-    args[position] = NULL; // Null-terminate the array of arguments
-    return args;
+    tokens[position] = NULL;
+    return tokens;
 }
+
 
 int is_builtin(char* command) {
     return (strcmp(command, "cd") == 0 || strcmp(command, "echo") == 0 ||

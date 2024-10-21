@@ -11,13 +11,23 @@
 #include <string.h>
 
 void execute_command(char* command) {
-    if (is_builtin(command)) {
-        execute_builtin(command);
+    char** args = parse_command(command);  // Assuming parse_command splits the command into args properly
+    
+    if (strcmp(args[0], "cd") == 0) {
+        builtin_cd(args[1]);
+    } else if (strcmp(args[0], "pwd") == 0) {
+        builtin_pwd();
+    } else if (strcmp(args[0], "export") == 0) {
+        builtin_export(args[1], args[2]);
+    } else if (strcmp(args[0], "echo") == 0) {
+        builtin_echo(args);
+    } else if (strcmp(args[0], "jobs") == 0) {
+        builtin_jobs();
     } else {
         pid_t pid = fork();
         if (pid == 0) {
             handle_io_redirection(command);
-            char** args = parse_command(command);
+            // Ensure args[0] is the command (e.g., "ls") and args[1..n] are its parameters.
             if (execvp(args[0], args) == -1) {
                 perror("quash");
             }
